@@ -29,8 +29,8 @@ PYBIND11_MODULE(gpoctomap_py, m)
       .def(py::init<>())
       .def("set_resolution", &la3dm::GPOctoMap::set_resolution)
       .def("get_resolution", &la3dm::GPOctoMap::get_resolution)
-      .def("insert_color_pointcloud", [](la3dm::GPOctoMap& gptree, Eigen::MatrixXf& pcld) {
+      .def("insert_color_pointcloud", [](la3dm::GPOctoMap& gptree, Eigen::MatrixXf& pcld, float ds_resolution) {
         la3dm::PCLPointCloud pcld_converted = eigenToPCL(pcld);
-        gptree.insert_pointcloud(pcld_converted, la3dm::point3f(0.0, 0.0, 0.0), -1);
+        gptree.insert_pointcloud(pcld_converted, la3dm::point3f(0.0, 0.0, 0.0), ds_resolution);
       });
 }

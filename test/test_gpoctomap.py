@@ -11,4 +11,6 @@ data = np.load('copier.npz')
 pcld = np.array(data["arr_0"])
 n_samples = np.shape(pcld)[0]
 
-gpom.insert_color_pointcloud(pcld)
+ds_res = 0.02
+
+gpom.insert_color_pointcloud(pcld, ds_res)
