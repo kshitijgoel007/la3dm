@@ -224,6 +224,8 @@ set(GP_SOURCE_FILES
 #)
 
 pybind11_add_module(gpoctomap_py
+    ${GP_SOURCE_FILES}
+    ${COMMON_SOURCE_FILES}
     src/gpoctomap/gpoctomap_py.cpp
 )
 
