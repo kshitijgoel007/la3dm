@@ -1,0 +1,7 @@
+{
+  "name": "la3dm",
+  "dependencies": {
+    "pybind11",
+    "octomap"
+  }
+}

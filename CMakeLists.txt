@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8.3)
 project(la3dm)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -O3")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set(octomap_DIR "${CMAKE_SOURCE_DIR}/../octomap/lib/cmake/octomap")
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
@@ -9,6 +11,11 @@ if (OPENMP_FOUND)
         set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
         message("OpenMP enabled")
 endif()
+
+find_package(pybind11 REQUIRED)
+find_package(octomap REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(PCL 1.11.1 REQUIRED)
 
 ## Enable OpenMP
 add_definitions(-DOPENMP)
@@ -21,16 +28,16 @@ add_definitions(-DOPENMP)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS
-        geometry_msgs
-        visualization_msgs
-	pcl_conversions
-        nav_msgs
-        pcl_ros
-        roscpp
-	sensor_msgs
-        octomap_ros
-)
+#find_package(catkin REQUIRED COMPONENTS
+#        geometry_msgs
+#        visualization_msgs
+#	pcl_conversions
+#        nav_msgs
+#        pcl_ros
+#        roscpp
+#	sensor_msgs
+#        octomap_ros
+#)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -101,12 +108,12 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES la3dm
-  #CATKIN_DEPENDS pcl_ros octomap_ros geometry_msgs visualization_msgs roscpp
-#  DEPENDS system_lib
-)
+#catkin_package(
+#  INCLUDE_DIRS include
+#  LIBRARIES la3dm
+#  #CATKIN_DEPENDS pcl_ros octomap_ros geometry_msgs visualization_msgs roscpp
+##  DEPENDS system_lib
+#)
 
 ###########
 ## Build ##
@@ -123,6 +130,7 @@ include_directories(
         include/common
         ${catkin_INCLUDE_DIRS}
         ${OCTOMAP_INCLUDE_DIRS}
+  	${PCL_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -167,92 +175,101 @@ set(GP_SOURCE_FILES
   src/gpoctomap/gpoctree.cpp
 )
 
-add_executable(bgklvoctomap_static_node
-    ${BGKLV_SOURCE_FILES}
-    ${COMMON_SOURCE_FILES}
-    src/bgklvoctomap/bgklvoctomap_static_node.cpp
+#add_executable(bgklvoctomap_static_node
+#    ${BGKLV_SOURCE_FILES}
+#    ${COMMON_SOURCE_FILES}
+#    src/bgklvoctomap/bgklvoctomap_static_node.cpp
+#)
+#
+#add_executable(bgkloctomap_static_node
+#    ${BGKL_SOURCE_FILES}
+#    ${COMMON_SOURCE_FILES}
+#    src/bgkloctomap/bgkloctomap_static_node.cpp
+#)
+#
+#add_executable(bgkoctomap_static_node
+#    ${BGK_SOURCE_FILES}
+#    ${COMMON_SOURCE_FILES}
+#    src/bgkoctomap/bgkoctomap_static_node.cpp
+#)
+#
+#add_executable(gpoctomap_static_node
+#    ${GP_SOURCE_FILES}
+#    ${COMMON_SOURCE_FILES}
+#    src/gpoctomap/gpoctomap_static_node.cpp
+#)
+#
+#add_executable(bgklvoctomap_server
+#    ${BGKLV_SOURCE_FILES}
+#    ${COMMON_SOURCE_FILES}
+#    src/bgklvoctomap/bgklvoctomap_server.cpp
+#)
+#
+#add_executable(bgkloctomap_server
+#    ${BGKL_SOURCE_FILES}
+#    ${COMMON_SOURCE_FILES}
+#    src/bgkloctomap/bgkloctomap_server.cpp
+#)
+#
+#add_executable(bgkoctomap_server
+#    ${BGK_SOURCE_FILES}
+#    ${COMMON_SOURCE_FILES}
+#    src/bgkoctomap/bgkoctomap_server.cpp
+#)
+#
+#add_executable(gpoctomap_server
+#    ${GP_SOURCE_FILES}
+#    ${COMMON_SOURCE_FILES}
+#    src/gpoctomap/gpoctomap_server.cpp
+#)
+
+pybind11_add_module(gpoctomap_py
+    src/gpoctomap/gpoctomap_py.cpp
 )
 
-add_executable(bgkloctomap_static_node
-    ${BGKL_SOURCE_FILES}
-    ${COMMON_SOURCE_FILES}
-    src/bgkloctomap/bgkloctomap_static_node.cpp
-)
+target_link_libraries(gpoctomap_py PRIVATE ${PYTHON_LIBRARIES} ${OCTOMAP_LIBRARIES} ${PCL_LIBRARIES})
+set_target_properties(gpoctomap_py PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${CMAKE_INSTALL_PREFIX})
 
-add_executable(bgkoctomap_static_node
-    ${BGK_SOURCE_FILES}
-    ${COMMON_SOURCE_FILES}
-    src/bgkoctomap/bgkoctomap_static_node.cpp
-)
-
-add_executable(gpoctomap_static_node
-    ${GP_SOURCE_FILES}
-    ${COMMON_SOURCE_FILES}
-    src/gpoctomap/gpoctomap_static_node.cpp
-)
-
-add_executable(bgklvoctomap_server
-    ${BGKLV_SOURCE_FILES}
-    ${COMMON_SOURCE_FILES}
-    src/bgklvoctomap/bgklvoctomap_server.cpp
-)
-
-add_executable(bgkloctomap_server
-    ${BGKL_SOURCE_FILES}
-    ${COMMON_SOURCE_FILES}
-    src/bgkloctomap/bgkloctomap_server.cpp
-)
-
-add_executable(bgkoctomap_server
-    ${BGK_SOURCE_FILES}
-    ${COMMON_SOURCE_FILES}
-    src/bgkoctomap/bgkoctomap_server.cpp
-)
-
-add_executable(gpoctomap_server
-    ${GP_SOURCE_FILES}
-    ${COMMON_SOURCE_FILES}
-    src/gpoctomap/gpoctomap_server.cpp
-)
+install(TARGETS DESTINATION ${CMAKE_INSTALL_PREFIX})
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(BGKOctoMap_node BGKOctoMap_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(bgklvoctomap_static_node
-        ${catkin_LIBRARIES}
-)
-
-target_link_libraries(bgkloctomap_static_node
-        ${catkin_LIBRARIES}
-)
-
-target_link_libraries(bgkoctomap_static_node
-        ${catkin_LIBRARIES}
-)
-
-target_link_libraries(gpoctomap_static_node
-        ${catkin_LIBRARIES}
-)
-
-target_link_libraries(bgklvoctomap_server
-        ${catkin_LIBRARIES}
-)
-
-target_link_libraries(bgkloctomap_server
-        ${catkin_LIBRARIES}
-)
-
-target_link_libraries(bgkoctomap_server
-        ${catkin_LIBRARIES}
-)
-
-target_link_libraries(gpoctomap_server
-        ${catkin_LIBRARIES}
-)
-
-link_directories(/usr/local/lib)
+#target_link_libraries(bgklvoctomap_static_node
+#        ${catkin_LIBRARIES}
+#)
+#
+#target_link_libraries(bgkloctomap_static_node
+#        ${catkin_LIBRARIES}
+#)
+#
+#target_link_libraries(bgkoctomap_static_node
+#        ${catkin_LIBRARIES}
+#)
+#
+#target_link_libraries(gpoctomap_static_node
+#        ${catkin_LIBRARIES}
+#)
+#
+#target_link_libraries(bgklvoctomap_server
+#        ${catkin_LIBRARIES}
+#)
+#
+#target_link_libraries(bgkloctomap_server
+#        ${catkin_LIBRARIES}
+#)
+#
+#target_link_libraries(bgkoctomap_server
+#        ${catkin_LIBRARIES}
+#)
+#
+#target_link_libraries(gpoctomap_server
+#        ${catkin_LIBRARIES}
+#)
+#
+#link_directories(/usr/local/lib)
 
 #############
 ## Install ##
