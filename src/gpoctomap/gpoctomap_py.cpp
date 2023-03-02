@@ -50,8 +50,8 @@ PYBIND11_MODULE(gpoctomap_py, m)
         gptree.insert_pointcloud(pcld_converted, la3dm::point3f(origin(0), origin(1), origin(2)), ds_resolution);
         gptree.update_intensity(pcld_converted);
       })
-      .def("get_pointcloud", [](la3dm::GPOctoMap& gptree) {
-        std::vector<Eigen::Vector4f> points;
+      .def("get_3d_recon", [](la3dm::GPOctoMap& gptree) {
+        std::vector<Eigen::Vector3f> points;
         for (auto it = gptree.begin_leaf(); it != gptree.end_leaf(); ++it)
         {
           la3dm::point3f p = it.get_loc();
@@ -61,13 +61,12 @@ PYBIND11_MODULE(gpoctomap_py, m)
             auto pruned = it.get_pruned_locs();
             for (auto n = pruned.cbegin(); n < pruned.cend(); ++n)
             {
-              la3dm::OcTreeNode node = gptree.search(n->x(), n->y(), n->z());
-              points.push_back(Eigen::Vector4f(n->x(), n->y(), n->z(), node.get_intensity()));
+              points.push_back(Eigen::Vector3f(n->x(), n->y(), n->z()));
             }
           }
         }
 
-        Eigen::MatrixXf final_pcld = Eigen::MatrixXf(points.size(), 4);
+        Eigen::MatrixXf final_pcld = Eigen::MatrixXf(points.size(), 3);
         for (int i = 0; i < points.size(); i++)
         {
           final_pcld(i, Eigen::all) = points[i];
