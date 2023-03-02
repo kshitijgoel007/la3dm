@@ -1,22 +1,62 @@
+import glob
+import os
+import argparse
 import open3d as o3d
 import numpy as np
 import matplotlib.pyplot as plt
 
 from gpoctomap_py import GPOctoMap
-from sogmm_py.utils import np_to_o3d, o3d_to_np
+from sogmm_py.utils import np_to_o3d, read_log_trajectory, dir_path
+from sogmm_py.vis_open3d import VisOpen3D
+from sogmm_py import ImageUtils
 
-gpom = GPOctoMap()
-gpom.set_resolution(0.02)
 
-# data = np.load('copier.npz')
-# pcld = np.array(data["arr_0"])
-pcld = o3d_to_np(o3d.io.read_point_cloud('test.pcd', format='pcd'))
-n_samples = np.shape(pcld)[0]
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--decimate', type=int)
+    args = parser.parse_args()
 
-ds_res = 0.1
+    d = args.decimate
 
-gpom.insert_color_pointcloud(pcld, ds_res)
+    traj = read_log_trajectory('copyroom-traj.log')
+    gt_pose = traj[9].pose
 
-recon = gpom.get_pointcloud()
+    K = np.eye(3)
+    K[0, 0] = 525.0/d
+    K[1, 1] = 525.0/d
+    K[0, 2] = 319.5/d
+    K[1, 2] = 239.5/d
 
-o3d.visualization.draw_geometries([np_to_o3d(recon)])
+    iu = ImageUtils(K)
+    W = (int)(640/d)
+    H = (int)(480/d)
+
+    O3D_K = np.array([[935.30743609,   0.,         959.5],
+                      [0.,         935.30743609, 539.5],
+                      [0.,           0.,           1.]])
+
+    vis = VisOpen3D(visible=True)
+    coord_frame = o3d.geometry.TriangleMesh.create_coordinate_frame(
+        size=0.6, origin=[0., 0., 0.])
+    vis.add_geometry(coord_frame)
+
+    pcld_gt, im = iu.generate_pcld_wf(gt_pose, rgb_path='./color/000009.png',
+                                    depth_path='./depth/000009.png',
+                                    size=(W, H))
+
+    gpom = GPOctoMap()
+    gpom.set_resolution(0.02)
+
+    ds_res = 0.005
+    gpom.insert_color_pointcloud(pcld_gt, np.array([0., 0., 0.]), ds_res)
+    recon = gpom.get_pointcloud()
+
+    vis.add_geometry(np_to_o3d(recon))
+    vis.add_geometry(np_to_o3d(pcld_gt))
+
+    vis.update_view_point(O3D_K, np.linalg.inv(gt_pose))
+    vis.update_renderer()
+    # vis.capture_screen_image(str(fr) + '_gt.png')
+    vis.run()
+
+    del vis

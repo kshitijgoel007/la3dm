@@ -44,9 +44,9 @@ PYBIND11_MODULE(gpoctomap_py, m)
       .def(py::init<>())
       .def("set_resolution", &la3dm::GPOctoMap::set_resolution)
       .def("get_resolution", &la3dm::GPOctoMap::get_resolution)
-      .def("insert_color_pointcloud", [](la3dm::GPOctoMap& gptree, Eigen::MatrixXf& pcld, float ds_resolution) {
-        la3dm::PCLPointCloud pcld_converted = eigenToPCLXYZ(pcld);
-        gptree.insert_pointcloud(pcld_converted, la3dm::point3f(0.0, 0.0, 0.0), ds_resolution);
+      .def("insert_color_pointcloud", [](la3dm::GPOctoMap& gptree, Eigen::MatrixXf& pcld, Eigen::Vector3f& origin, float ds_resolution) {
+        la3dm::PCLPointCloud pcld_converted = eigenToPCLXYZI(pcld);
+        gptree.insert_pointcloud(pcld_converted, la3dm::point3f(origin(0), origin(1), origin(2)), ds_resolution);
       })
       .def("get_pointcloud", [](la3dm::GPOctoMap& gptree) {
         std::vector<Eigen::Vector3f> points;
@@ -56,9 +56,6 @@ PYBIND11_MODULE(gpoctomap_py, m)
 
           if (it.get_node().get_state() == la3dm::State::OCCUPIED)
           {
-            // auto pruned = it.get_pruned_locs();
-            // for (auto n = pruned.cbegin(); n < pruned.cend(); ++n)
-            //   points.push_back(Eigen::Vector3f(n->x(), n->y(), n->z()));
             points.push_back(Eigen::Vector3f(p.x(), p.y(), p.z()));
           }
         }
