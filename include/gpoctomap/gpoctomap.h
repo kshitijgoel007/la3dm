@@ -77,6 +77,8 @@ namespace la3dm {
                                float free_res = 2.0f,
                                float max_range = -1);
 
+        void update_intensity(const PCLPointCloud &cloud);
+
         void insert_training_data(const GPPointCloud &cloud);
 
         /// Get bounding box of the map.
@@ -309,6 +311,8 @@ namespace la3dm {
         OcTreeNode search(point3f p) const;
 
         OcTreeNode search(float x, float y, float z) const;
+
+        OcTreeNode& search_ptr(float x, float y, float z) const;
 
         Block *search(BlockHashKey key) const;
 

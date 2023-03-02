@@ -349,6 +349,13 @@ namespace la3dm {
         rtree.RemoveAll();
     }
 
+    void GPOctoMap::update_intensity(const PCLPointCloud& cloud) {
+        for (int i = 0; i < cloud.points.size(); i++) {
+            OcTreeNode& n = search_ptr(cloud.points[i].x, cloud.points[i].y, cloud.points[i].z);
+            n.update_intensity(cloud.points[i].intensity);
+        }
+    }
+
     void GPOctoMap::get_bbox(point3f &lim_min, point3f &lim_max) const {
         lim_min = point3f(0, 0, 0);
         lim_max = point3f(0, 0, 0);
@@ -559,5 +566,11 @@ namespace la3dm {
 
     OcTreeNode GPOctoMap::search(float x, float y, float z) const {
         return search(point3f(x, y, z));
+    }
+
+    OcTreeNode& GPOctoMap::search_ptr(float x, float y, float z) const {
+        auto p = point3f(x, y, z);
+        Block *block = search(block_to_hash_key(p));
+        return block->search(p);
     }
 }

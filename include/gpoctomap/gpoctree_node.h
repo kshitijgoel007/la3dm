@@ -53,8 +53,13 @@ namespace la3dm {
          */
         void update(float new_m, float new_var);
 
+        void update_intensity(float new_intensity) { intensity = new_intensity; }  
+
         /// Get probability of occupancy.
         float get_prob() const;
+
+        /// Get intensity.
+        float get_intensity() const { return intensity; }
 
         /// Get variance of occupancy (uncertainty)
         inline float get_var() const { return 1.0f / ivar; }
@@ -91,6 +96,8 @@ namespace la3dm {
 
         static float free_thresh;     // FREE occupancy threshold
         static float occupied_thresh; // OCCUPIED occupancy threshold
+
+        float intensity; // color
     };
 
     typedef Occupancy OcTreeNode;

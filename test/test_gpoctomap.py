@@ -1,5 +1,3 @@
-import glob
-import os
 import argparse
 import open3d as o3d
 import numpy as np
@@ -44,15 +42,14 @@ if __name__ == "__main__":
                                     depth_path='./depth/000009.png',
                                     size=(W, H))
 
-    gpom = GPOctoMap()
-    gpom.set_resolution(0.02)
+    gpom = GPOctoMap(0.02, 4, 1.0, 1.0, 0.01, 100, 0.001, 1000, 0.001, 0.3, 0.7)
 
-    ds_res = 0.005
-    gpom.insert_color_pointcloud(pcld_gt, np.array([0., 0., 0.]), ds_res)
-    recon = gpom.get_pointcloud()
+    ds_res = 0.02
+    gpom.insert_color_pointcloud(pcld_gt, gt_pose[:3, 3], ds_res)
+    recon = gpom.get_intensity_recon(pcld_gt)
 
     vis.add_geometry(np_to_o3d(recon))
-    vis.add_geometry(np_to_o3d(pcld_gt))
+    # vis.add_geometry(np_to_o3d(pcld_gt))
 
     vis.update_view_point(O3D_K, np.linalg.inv(gt_pose))
     vis.update_renderer()
